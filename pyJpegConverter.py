@@ -21,6 +21,7 @@ class Application(Frame):
     def create_widget(self):
         # create lable and buttons
         self.instruction = Label(self) # create a label
+        self.instruction.pack()
         self.instruction["text"] = "select an image to be converted in jpeg format: " # add text in label
         self.instruction.grid(row=0, column=0, columnspan=2, sticky=W) # add label into the grid and positioning
 
@@ -37,6 +38,7 @@ class Application(Frame):
 
         # label + entry for define the convert quality
         self.qualbl = Label(self) # create text label
+        self.qualbl.pack
         self.qualbl["text"] = "image quality(1-100): "  # add text
         self.qualbl.grid(row=2,column=0,sticky=W) # positioning
         self.imgQuality = Entry(self) # create entry for input quality 1-100
@@ -59,8 +61,12 @@ class Application(Frame):
         for path,size in self.selectedIMGs.items():
             #print(size)
             image = Image.open(path)
-            pathArr = path.split(os.sep) # split the path as array
-            imgname = pathArr[-1].split('.') # split the file by name + extention
+            if image.mode != 'RGBA' or image.mode != 'RGB': # check if image is not in RGM mode
+                image = image.convert('RGB') # convert it to RGB for save as JPEG format later
+            fileName = os.path.basename(path) # trim out the path, get filename
+            print(fileName)
+            imgname = fileName.split('.') # split the file by name + extention
+            print(imgname)
             saveAs = imgname[0] + ".jpg" # new file name
 
             qualvl = int(self.imgQuality.get()) # get the quality value
@@ -70,12 +76,13 @@ class Application(Frame):
             self.text.insert(END, "selected image saved as " +  saveAs + "\n") # display info
 
             self.convertedSize = os.path.getsize(saveAs) # get size of new converted file
-            compressRatio = size / self.convertedSize # get compress ratio
+            compressRatio = round(size / self.convertedSize,3) # get compress ratio
             self.text.insert(END, "ratio: " + 
                     str(size) + "/" + str(self.convertedSize) + 
                     "=" + str(compressRatio) + "\n" ) # display result
     
     def selectIMG(self): # function for select target image
+        self.imgName.delete(0,END) # clear entry area        
         path = filedialog.askopenfilenames( filetypes = 
                 [
                     ("image files", "*.png *.gif *.bmp"),
@@ -87,11 +94,12 @@ class Application(Frame):
         for img in path:
             oriSize = os.path.getsize(img) # size of target file
             self.selectedIMGs[img]=oriSize # add into the dictionary
-            pathArr = img.split(os.sep)
+            fileName = os.path.basename(img) # get the filename
+            #print(fileName)
             self.imgName.configure(state="normal") # entry writable
-            self.imgName.insert(END, pathArr[-1] + ";")  # insert the image path
+            self.imgName.insert(END, fileName + ";")  # insert the image path
             self.imgName.configure(state="readonly") # disable entry
-            self.text.insert(END,pathArr[-1]+":"+str(oriSize)+"bytes\n") #display selected size
+            self.text.insert(END,fileName+":"+str(oriSize)+"bytes\n") #display selected size
 
         return self.selectedIMGs
 
