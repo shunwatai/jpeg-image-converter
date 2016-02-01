@@ -1,5 +1,10 @@
 #!/bin/env python
 
+"""
+This simple program does not under any licenses.
+This is just an assignment and for education purpose only.
+"""
+
 # import os for split path
 import os
 # import tkinter GUI lib
@@ -117,18 +122,16 @@ class Application(Frame):
             print(imgname)
             saveAs = imgname[0] + ".jpg" # new file name
 			
-			# get custom values
+            # get custom values
             qualvl = int(self.imgQuality.get()) # get the quality value
-            bright = int(self.brightlvl.get()) / 5.0 # get the brightness value as factor
-            contra = int(self.contrastlvl.get()) / 5.0   # get the contrast value as factor
+            bright = int(self.brightlvl.get()) / 4.0 # get the brightness value as factor
+            contra = int(self.contrastlvl.get()) / 4.0   # get the contrast value as factor
             
-            # create enhancer for brightness & contrast
-            brightEnhancer = ImageEnhance.Brightness(image)
-            contraEnhancer = ImageEnhance.Contrast(image)
-            
-            # actual adjustment
-            image = brightEnhancer.enhance(bright)
-            image = contraEnhancer.enhance(contra)
+            brightEnhancer = ImageEnhance.Brightness(image) # create brightness enhancer
+            image = brightEnhancer.enhance(bright) # adjust brightness
+
+            contraEnhancer = ImageEnhance.Contrast(image) # create contrast enhancer
+            image = contraEnhancer.enhance(contra) # adjust contrast
 
             image.save(saveAs,'JPEG',quality=qualvl) # convert and save it
 
@@ -140,8 +143,6 @@ class Application(Frame):
                     str(size) + "/" + str(self.convertedSize) + 
                     "=" + str(compressRatio) + "\n" ) # display result
     
-
-
 # create main window
 root = Tk()
 
