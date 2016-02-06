@@ -24,7 +24,7 @@ class Application(Frame):
         self.button_clicks = 0 # counter of button clicks, useless
         self.create_widget() # call create_wiget function to add elements
 
-    def create_widget(self):
+    def create_widget(self): # create all buttons,labels,textbox etc...
         # create lable and buttons
         self.instruction = Label(self) # create a label        
         self.instruction["text"] = "select an image to be converted in jpeg format: " # add text in label
@@ -70,30 +70,39 @@ class Application(Frame):
 
         # text box for display infomation
         self.text = Text(self, width=40, height=5, wrap=WORD) # add textbox area
-        self.text.grid(row=5,column=0,columnspan=2,sticky=W) # positioning
-        
+        self.text.grid(row=5,column=0,columnspan=3,sticky=W) # positioning
+   
+        # entry for set the convert destination and "save in" button
+        self.destination = Entry(self)
+        self.destination.insert(0,os.getcwd())
+        self.destination.grid(row=6,column=0,sticky=W)
+        self.saveIn = Button(self, text="Save Path")
+        self.saveIn["command"] = self.savePath
+        self.saveIn.grid(row=6,column=1,sticky=W)
+
         # create preview button, run preview func.
-        self.submit_button = Button(self) # create a convert button
-        self.submit_button["text"] = "Preview" # text of button
-        #self.submit_button["command"] = self.previewJPG # onclick, run convertJPG function
-        self.submit_button.grid(row=6,column=0,sticky=E) # positioning
+        self.preview_button = Button(self) # create a convert button
+        self.preview_button["text"] = "Preview" # text of button
+        self.preview_button["command"] = self.previewIMG # onclick, run convertJPG function
+        self.preview_button.grid(row=7,column=0,sticky=E) # positioning
         # create submit button, run convert func.
         self.submit_button = Button(self) # create a convert button
         self.submit_button["text"] = "Convert" # text of button
         self.submit_button["command"] = self.convertJPG # onclick, run convertJPG function
-        self.submit_button.grid(row=6,column=1,sticky=W) # positioning
+        self.submit_button.grid(row=7,column=1,sticky=W) # positioning
+
 
     def selectIMG(self): # function for select target image
         self.imgName.configure(state="normal") # entry writable
         self.imgName.delete(0,END) # clear entry area   
         self.text.delete(0.0,END)  # clear info area
-        path = filedialog.askopenfilenames( filetypes = 
+        path = filedialog.askopenfilenames( filetypes = # store multiple images as array to path
                 [
                     ("image files", "*.png *.gif *.bmp"),
                     ("All files", "*.*")                              
                 ] )
 
-        self.selectedIMGs = {}
+        self.selectedIMGs = {} # dict. store the image : size
 
         for img in path:
             oriSize = os.path.getsize(img) # size of target file
@@ -107,23 +116,23 @@ class Application(Frame):
 
         return self.selectedIMGs
         
-    #def previewJPG(self):
+    def savePath(self): # select the destination directory to save the images
+        self.destination.delete(0,END)
+        savePath = filedialog.askdirectory(initialdir=os.getcwd())
+        self.destination.insert(0,savePath)
 
-    def convertJPG(self): # function for convert to JPEG
-        self.text.delete(0.0, END) # clear the textbox area
-        for path,size in self.selectedIMGs.items():
-            #print(size)
+    def adjustment(self, imgDict): # do the adjsutment effects, brighness, contrast etc...
+        self.preConvertIMGs = {} # store the images for preview / save in a list
+        for path,size in imgDict.items(): 
+            #print(path)
             image = Image.open(path) # open the actual image according to path
             if image.mode != 'RGBA' or image.mode != 'RGB': # check if image is not in RGM mode
                 image = image.convert('RGB') # convert it to RGB for save as JPEG format later
             fileName = os.path.basename(path) # trim out the path, get filename
-            print(fileName)
             imgname = fileName.split('.') # split the file by name + extention
-            print(imgname)
             saveAs = imgname[0] + ".jpg" # new file name
 			
             # get custom values
-            qualvl = int(self.imgQuality.get()) # get the quality value
             bright = int(self.brightlvl.get()) / 4.0 # get the brightness value as factor
             contra = int(self.contrastlvl.get()) / 4.0   # get the contrast value as factor
             
@@ -133,15 +142,33 @@ class Application(Frame):
             contraEnhancer = ImageEnhance.Contrast(image) # create contrast enhancer
             image = contraEnhancer.enhance(contra) # adjust contrast
 
+            self.preConvertIMGs[saveAs]=image # key: file name that will be saved, 
+                                              # value: the actual processed image
+        return self.preConvertIMGs
+
+    def previewIMG(self): # this func. show all processed images
+        self.adjustment(self.selectedIMGs) # get adjusted images
+        for image in self.preConvertIMGs.values():
+            image.show() # preview the images
+
+    def convertJPG(self): # function for convert to JPEG
+        os.chdir(self.destination.get()) # change to the destination directory
+        self.text.delete(0.0, END) # clear the textbox area
+        self.adjustment(self.selectedIMGs) # adjust the image properties
+        oriSize = list(self.selectedIMGs.values()) # get size of images as list
+        i=0 # index of oriSize for calculate ratio
+        qualvl = int(self.imgQuality.get()) # get the quality value
+        for saveAs, image in self.preConvertIMGs.items():
             image.save(saveAs,'JPEG',quality=qualvl) # convert and save it
 
             self.text.insert(END, "selected image saved as " +  saveAs + "\n") # display info
 
             self.convertedSize = os.path.getsize(saveAs) # get size of new converted file
-            compressRatio = round(size / self.convertedSize,3) # get compress ratio
+            compressRatio = round(oriSize[i] / self.convertedSize,3) # get compress ratio
             self.text.insert(END, "ratio: " + 
-                    str(size) + "/" + str(self.convertedSize) + 
+                    str(oriSize[i]) + "/" + str(self.convertedSize) + 
                     "=" + str(compressRatio) + "\n" ) # display result
+            i = i+1 # increment oriSize index
     
 # create main window
 root = Tk()
@@ -150,7 +177,7 @@ root = Tk()
 root.title("jpeg converter")
 
 # window size
-root.geometry("300x200")
+root.geometry("350x300")
 
 # create a frame in the main window
 app = Application(root)

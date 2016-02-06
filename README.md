@@ -8,5 +8,10 @@ processing.
 
 
 TODO: 
-1. Function for preview image
-2. Function for set "destination path"
+1. Function for preview image in a better way
+
+2. find the bugs to fix
+
+3. improve interface
+
+4. add more adjustment options, such as sharpness etc...
