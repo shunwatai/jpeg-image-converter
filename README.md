@@ -8,6 +8,7 @@ processing.
 
 
 TODO: 
+
 1. Function for preview image in a better way
 
 2. find the bugs to fix
