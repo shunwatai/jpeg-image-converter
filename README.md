@@ -6,6 +6,9 @@ format. It allows user the select multiple images to convert.
 I used Python3.5 to program it, Tkinter lib as GUI, PIL lib as image
 processing.
 
+To run this program, you need to install python 3.5, then open terminal/cmd and
+install PIL library by following command "pip install Pillow". Then try to run
+this program.
 
 TODO: 
 
