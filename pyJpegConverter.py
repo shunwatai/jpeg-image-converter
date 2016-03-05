@@ -2,7 +2,8 @@
 
 """
 This simple program does not under any licenses.
-This is just an assignment and for education purpose only.
+This is just an assignment and for educational purpose only.
+Feel free to edit the code to suit yourself
 """
 
 # import os for split path
@@ -67,29 +68,47 @@ class Application(Frame):
         self.contrastlvl.config(width=3) # adjust entry width
         self.contrastlvl.insert(0, "4") # default value 4
         self.contrastlvl.grid(row=4,column=1,sticky=W) # positioning
+        
+        # label + entry for adjust sharpness
+        self.sharpnesslbl = Label(self) # create text label        
+        self.sharpnesslbl["text"] = "sharpness(1-10): "  # add text
+        self.sharpnesslbl.grid(row=5,column=0,sticky=W) # positioning
+        self.sharpnesslvl = Entry(self) # create entry for input contrast 1-10
+        self.sharpnesslvl.config(width=3) # adjust entry width
+        self.sharpnesslvl.insert(0, "4") # default value 4
+        self.sharpnesslvl.grid(row=5,column=1,sticky=W) # positioning
+        
+        # label + entry for adjust colour
+        self.colourlbl = Label(self) # create text label        
+        self.colourlbl["text"] = "colour(1-10): "  # add text
+        self.colourlbl.grid(row=6,column=0,sticky=W) # positioning
+        self.colourlvl = Entry(self) # create entry for input contrast 1-10
+        self.colourlvl.config(width=3) # adjust entry width
+        self.colourlvl.insert(0, "4") # default value 4
+        self.colourlvl.grid(row=6,column=1,sticky=W) # positioning
 
         # text box for display infomation
         self.text = Text(self, width=40, height=5, wrap=WORD) # add textbox area
-        self.text.grid(row=5,column=0,columnspan=3,sticky=W) # positioning
+        self.text.grid(row=7,column=0,columnspan=3,sticky=W) # positioning
    
         # entry for set the convert destination and "save in" button
         self.destination = Entry(self)
         self.destination.insert(0,os.getcwd())
-        self.destination.grid(row=6,column=0,sticky=W)
+        self.destination.grid(row=8,column=0,sticky=W)
         self.saveIn = Button(self, text="Save Path")
         self.saveIn["command"] = self.savePath
-        self.saveIn.grid(row=6,column=1,sticky=W)
+        self.saveIn.grid(row=8,column=1,sticky=W)
 
         # create preview button, run preview func.
         self.preview_button = Button(self) # create a convert button
         self.preview_button["text"] = "Preview" # text of button
         self.preview_button["command"] = self.previewIMG # onclick, run convertJPG function
-        self.preview_button.grid(row=7,column=0,sticky=E) # positioning
+        self.preview_button.grid(row=9,column=0,sticky=E) # positioning
         # create submit button, run convert func.
         self.submit_button = Button(self) # create a convert button
         self.submit_button["text"] = "Convert" # text of button
         self.submit_button["command"] = self.convertJPG # onclick, run convertJPG function
-        self.submit_button.grid(row=7,column=1,sticky=W) # positioning
+        self.submit_button.grid(row=9,column=1,sticky=W) # positioning
 
 
     def selectIMG(self): # function for select target image
@@ -135,12 +154,20 @@ class Application(Frame):
             # get custom values
             bright = int(self.brightlvl.get()) / 4.0 # get the brightness value as factor
             contra = int(self.contrastlvl.get()) / 4.0   # get the contrast value as factor
+            sharp = int(self.sharpnesslvl.get()) / 4.0   # get the sharpness value as factor
+            colour = int(self.colourlvl.get()) / 4.0   # get the colour balance value as factor
             
             brightEnhancer = ImageEnhance.Brightness(image) # create brightness enhancer
             image = brightEnhancer.enhance(bright) # adjust brightness
 
             contraEnhancer = ImageEnhance.Contrast(image) # create contrast enhancer
             image = contraEnhancer.enhance(contra) # adjust contrast
+            
+            sharpEnhancer = ImageEnhance.Sharpness(image) # create sharpness enhancer
+            image = sharpEnhancer.enhance(sharp)   # adjust sharpness
+            
+            colourEnhancer = ImageEnhance.Color(image) # create colour balance enhancer
+            image = colourEnhancer.enhance(colour) # adjust colour balance
 
             self.preConvertIMGs[saveAs]=image # key: file name that will be saved, 
                                               # value: the actual processed image
