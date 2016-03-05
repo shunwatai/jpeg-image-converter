@@ -116,9 +116,9 @@ class Application(Frame):
         self.submit_button["text"] = "Convert" # text of button
         self.submit_button["command"] = self.convertJPG # onclick, run convertJPG function
         self.submit_button.grid(row=10,column=1,sticky=W) # positioning
-        # checkbox to grayscale
-        self.grayscale = BooleanVar()
-        Checkbutton(self, text="To GrayScale", variable = self.grayscale).grid(row=10,column=0,sticky=W)
+        # checkbox to greyscale
+        self.greyscale = BooleanVar()
+        Checkbutton(self, text="To Greyscale", variable = self.greyscale).grid(row=10,column=0,sticky=W)
 
 
     def selectIMG(self): # function for select target image
@@ -179,8 +179,8 @@ class Application(Frame):
             colourEnhancer = ImageEnhance.Color(image) # create colour balance enhancer
             image = colourEnhancer.enhance(colour) # adjust colour balance
             
-            if self.grayscale.get(): # if checked the grayscale box
-                image = image.convert('L') # convert it to grayscale
+            if self.greyscale.get(): # if checked the greyscale box
+                image = image.convert('L') # convert it to greyscale
 
             self.preConvertIMGs[saveAs]=image # key: file name that will be saved, 
                                               # value: the actual processed image object
