@@ -16,6 +16,8 @@ from tkinter import filedialog # browse files
 from PIL import Image
 from PIL import ImageFilter  # for Blur etc...
 from PIL import ImageEnhance # for adjust brightness,contrast etc...
+# for histogram
+from PIL import ImageDraw
 
 # create an "application" class for create a frame in the main window
 class Application(Frame):
@@ -99,16 +101,21 @@ class Application(Frame):
         self.saveIn["command"] = self.savePath
         self.saveIn.grid(row=8,column=1,sticky=W)
 
-        # create preview button, run preview func.
+        # for histogram
+        self.histogram_button = Button(self) # create a convert button
+        self.histogram_button["text"] = "View Histogram" # text of button
+        self.histogram_button["command"] = self.showHistogram # onclick, run convertJPG function
+        self.histogram_button.grid(row=9,column=0,sticky=W) # positioning
+        # create preview button, run preview func.        
         self.preview_button = Button(self) # create a convert button
         self.preview_button["text"] = "Preview" # text of button
         self.preview_button["command"] = self.previewIMG # onclick, run convertJPG function
-        self.preview_button.grid(row=9,column=0,sticky=E) # positioning
+        self.preview_button.grid(row=9,column=1,sticky=W) # positioning
         # create submit button, run convert func.
         self.submit_button = Button(self) # create a convert button
         self.submit_button["text"] = "Convert" # text of button
         self.submit_button["command"] = self.convertJPG # onclick, run convertJPG function
-        self.submit_button.grid(row=9,column=1,sticky=W) # positioning
+        self.submit_button.grid(row=10,column=1,sticky=W) # positioning
 
 
     def selectIMG(self): # function for select target image
@@ -131,7 +138,7 @@ class Application(Frame):
             self.imgName.configure(state="normal") # entry writable
             self.imgName.insert(END, fileName + ";")  # insert the image path
             self.imgName.configure(state="readonly") # disable entry
-            self.text.insert(END,fileName+":"+str(oriSize)+"bytes\n") #display selected size
+            self.text.insert(END,fileName+":"+str(round(oriSize/1000/1000,3))+"MB\n") #display selected size
 
         return self.selectedIMGs
         
@@ -170,8 +177,58 @@ class Application(Frame):
             image = colourEnhancer.enhance(colour) # adjust colour balance
 
             self.preConvertIMGs[saveAs]=image # key: file name that will be saved, 
-                                              # value: the actual processed image
+                                              # value: the actual processed image object
         return self.preConvertIMGs
+
+    def showHistogram(self): # this func. for show the histogram of that image (ref: http://tophattaylor.blogspot.hk/2009/05/python-rgb-histogram.html)
+        self.adjustment(self.selectedIMGs) # get adjusted images
+        histHeight = 120            # Height of the histogram
+        histWidth = 256             # Width of the histogram
+        multiplerValue = 1.5        # The multiplier value basically increases
+                                    # the histogram height so that love values
+                                    # are easier to see, this in effect chops off
+                                    # the top of the histogram.
+        showFstopLines = True       # True/False to hide outline
+        fStopLines = 5
+        
+        # Colours to be used
+        backgroundColor = (51,51,51)    # Background color
+        lineColor = (102,102,102)       # Line color of fStop Markers 
+        red = (255,60,60)               # Color for the red lines
+        green = (51,204,51)             # Color for the green lines
+        blue = (0,102,255)              # Color for the blue lines
+        for img in self.preConvertIMGs.values():
+            hist = img.histogram()
+            histMax = max(hist)
+            xScale = float(histWidth)/len(hist)                   # xScaling
+            yScale = float((histHeight)*multiplerValue)/histMax   # yScaling 
+            im = Image.new("RGBA", (histWidth, histHeight), backgroundColor)   
+            draw = ImageDraw.Draw(im)
+            # Draw Outline is required
+            if showFstopLines:    
+                xmarker = histWidth/fStopLines
+                x =0
+                for i in range(1,fStopLines+1):
+                    draw.line((x, 0, x, histHeight), fill=lineColor)
+                    x+=xmarker
+                draw.line((histWidth-1, 0, histWidth-1, 200), fill=lineColor)
+                draw.line((0, 0, 0, histHeight), fill=lineColor)
+                
+            # Draw the RGB histogram lines
+            x=0; c=0;
+            for i in hist:
+                if int(i)==0: pass
+                else:
+                    color = red
+                    if c>255: color = green
+                    if c>511: color = blue
+                    draw.line((x, histHeight, x, histHeight-(i*yScale)), fill=color)        
+                if x>255: x=0
+                else: x+=1
+                c+=1
+            
+            # Now show the histogram   
+            im.show()
 
     def previewIMG(self): # this func. show all processed images
         self.adjustment(self.selectedIMGs) # get adjusted images
@@ -193,7 +250,7 @@ class Application(Frame):
             self.convertedSize = os.path.getsize(saveAs) # get size of new converted file
             compressRatio = round(oriSize[i] / self.convertedSize,3) # get compress ratio
             self.text.insert(END, "ratio: " + 
-                    str(oriSize[i]) + "/" + str(self.convertedSize) + 
+                    str(round(oriSize[i]/1000/1000,3)) + "/" + str(round(self.convertedSize/1000/1000,3)) + 
                     "=" + str(compressRatio) + "\n" ) # display result
             i = i+1 # increment oriSize index
     
@@ -204,7 +261,7 @@ root = Tk()
 root.title("jpeg converter")
 
 # window size
-root.geometry("350x300")
+root.geometry("380x320")
 
 # create a frame in the main window
 app = Application(root)
