@@ -1,9 +1,11 @@
 ####This is the assignment of "COMP3422 Creative Digital Media Design"
 
 This is a simple python program for convert images in bmp,png etc. to jpeg
-format. It allows user the select multiple images to convert.
+format. Actually, JPEG image is also accepted as source, but please select another output folder to avoid overwite the original image.
 
-I used Python3.5 to program it, Tkinter lib as GUI, PIL lib as image
+It allows user the select multiple images to convert.
+
+I used Python3.5 to program it, ```Tkinter``` library for GUI, ```PIL``` library for image
 processing.
 
 ####How to run this program
